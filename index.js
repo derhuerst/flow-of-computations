@@ -3,6 +3,25 @@
 const findCycles = require('find-cycle/directed')
 const {overlappingPairs, addIfMissing, createLoop} = require('./lib/helpers')
 
+const combine = (first, ...next) => {
+	const steps = []
+	for (let i = 0; i < next.length; i += 2) {
+		const inputIdx = next[i]
+		const operation = next[i + 1]
+		steps.push([inputIdx, operation])
+	}
+
+	const combiner = (inputIdx, diff) => {
+		diff = first(inputIdx, diff)
+		for (const [inputIdx, op] of steps) diff = op(inputIdx, diff)
+		return diff
+	}
+
+	combiner.arity = first.arity
+	combiner.data = () => second.data()
+	return combiner
+}
+
 const withStore = (op) => {
 	const data = []
 
@@ -110,6 +129,7 @@ const flowRunner = ({inputs, forward, backward, prios}) => {
 }
 
 module.exports = {
+	combine,
 	withStore,
 	createFlow,
 	flowRunner
