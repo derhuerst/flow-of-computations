@@ -1,0 +1,22 @@
+{
+	"name": "@derhuerst/flow-of-computations",
+	"description": "Filter, transform and merge sets of data.",
+	"version": "0.1.0",
+	"main": "index.js",
+	"files": [
+		"index.js",
+		"ops.js",
+		"lib",
+		"example.js"
+	],
+	"author": "Jannis R <mail@jannisr.de>",
+	"homepage": "https://github.com/derhuerst/todo-name",
+	"repository": "derhuerst/todo-name",
+	"bugs": "https://github.com/derhuerst/todo-name/issues",
+	"license": "ISC",
+	"engines": {
+		"node": ">=8"
+	},
+	"dependencies": {
+	}
+}
