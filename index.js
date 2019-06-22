@@ -3,42 +3,6 @@
 const findCycles = require('find-cycle/directed')
 const {overlappingPairs, addIfMissing, createLoop} = require('./lib/helpers')
 
-const combine = (first, ...next) => {
-	const steps = []
-	for (let i = 0; i < next.length; i += 2) {
-		const inputIdx = next[i]
-		const operation = next[i + 1]
-		steps.push([inputIdx, operation])
-	}
-
-	const combiner = (inputIdx, diff) => {
-		diff = first(inputIdx, diff)
-		for (const [inputIdx, op] of steps) diff = op(inputIdx, diff)
-		return diff
-	}
-
-	combiner.arity = first.arity
-	combiner.data = () => second.data()
-	return combiner
-}
-
-const withStore = (op) => {
-	const data = []
-
-	const opWithStore = (inputIdx, inDiff) => {
-		const outDiff = op(inputIdx, inDiff)
-		const [idx, del, newItems] = outDiff
-		data.splice(idx, del, ...newItems)
-		return outDiff
-	}
-
-	opWithStore.opName = op.opName
-	opWithStore.arity = op.arity
-	opWithStore.toString = () => `opWithStore(${op})`
-	opWithStore.data = () => data
-	return opWithStore
-}
-
 const createFlow = (inputs, pipes) => {
 	const forward = new Map() // op/input -> [op]
 	const backward = new Map() // op -> [op/input]
@@ -87,8 +51,10 @@ const createFlow = (inputs, pipes) => {
 
 const flowRunner = ({inputs, forward, backward, prios}) => {
 	const {add, isEmpty, pop} = createLoop()
-
 	const queuedDiffs = new Map() // op -> [diff]
+	const iters = new WeakMap() // input -> iterator
+	for (const input of inputs) iters.set(input, input[Symbol.iterator]())
+
 	const onDiff = (diff, from) => {
 		for (const op of forward.get(from) || []) {
 			const inputIdx = backward.get(op).indexOf(from)
@@ -97,25 +63,28 @@ const flowRunner = ({inputs, forward, backward, prios}) => {
 			add(prios.get(op), runOp, op)
 		}
 	}
+
 	const runOp = (op) => {
 		const queue = queuedDiffs.get(op)
 		if (!queue || queue.length === 0) return;
+
 		const [inputIdx, diff] = queue.shift()
 		const newDiff = op(inputIdx, diff)
 		onDiff(newDiff, op)
+
 		if (queue.length > 0) add(prio.get(op), runOp, op) // add self
 	}
 
-	const iters = new WeakMap() // input -> iterator
-	for (const input of inputs) iters.set(input, input[Symbol.iterator]())
 	const readFromInput = (input) => {
 		const {done, value: diff} = iters.get(input).next()
 		if (done) return;
-		add(100, readFromInput, input) // add self
+
 		onDiff(diff, input)
+		add(100, readFromInput, input) // add self
 	}
 
 	for (const input of inputs) add(100, readFromInput, input)
+
 	const tick = () => {
 		const task = pop()
 		if (!task) return {done: true, value: undefined}
@@ -129,8 +98,6 @@ const flowRunner = ({inputs, forward, backward, prios}) => {
 }
 
 module.exports = {
-	combine,
-	withStore,
 	createFlow,
 	flowRunner
 }

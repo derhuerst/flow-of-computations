@@ -1,8 +1,7 @@
 'use strict'
 
-const {
-	withStore, createFlow, flowRunner
-} = require('.')
+const {createFlow, flowRunner} = require('.')
+const {withStore} = require('./utils')
 const {
 	add, zip, sum, print
 } = require('./ops')

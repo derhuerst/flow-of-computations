@@ -6,6 +6,7 @@
 	"files": [
 		"index.js",
 		"ops.js",
+		"utils.js",
 		"lib",
 		"example.js"
 	],

@@ -24,7 +24,6 @@ const createAdd = x => op(`add(${x})`, 1, createMap(item => item + x))
 const createMul = x => op(`mul(${x})`, 1, createMap(item => item * x))
 
 const createZip = (arity, defaultValue = null) => {
-
 	const datas = []
 	let zippedLength = 0
 	const zip = (inputIdx, [idx, del, newItems]) => {

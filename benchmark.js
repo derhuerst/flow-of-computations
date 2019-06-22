@@ -5,9 +5,9 @@ const {createFlow, flowRunner} = require('.')
 const {add} = require('./ops')
 
 const littleRows = [
-	[0, 0, new Array(100).fill(null).map((_, i) => i)],
+	[0, 0, new Array(1000).fill(null).map((_, i) => i)],
 	[1, 1, [50]],
-	[2, 0, new Array(1000).fill(null).map((_, i) => i)]
+	[2, 0, new Array(9000).fill(null).map((_, i) => i)]
 ]
 
 const chainAdds = (input, n) => {
@@ -23,10 +23,10 @@ const runner5 = flowRunner(chainAdds(littleRows, 5))
 const runner1000 = flowRunner(chainAdds(littleRows, 1000))
 
 new Suite()
-.add('5 adds, ~1k rows', () => {
+.add('5 adds, 10k rows', () => {
 	for (const _ of runner5) {}
 })
-.add('1000 adds, ~1k rows', () => {
+.add('1000 adds, 10k rows', () => {
 	for (const _ of runner1000) {}
 })
 .on('error', (err) => {
