@@ -49,7 +49,7 @@ const createFlow = (inputs, pipes) => {
 	return {inputs, forward, backward, prios}
 }
 
-const flowRunner = ({inputs, forward, backward, prios}) => {
+const flowRunner = ({inputs, forward, backward, prios}, async = true) => {
 	const {add, isEmpty, pop} = createLoop()
 	const queuedDiffs = new Map() // op -> [diff]
 	const iters = new WeakMap() // input -> iterator
@@ -75,26 +75,49 @@ const flowRunner = ({inputs, forward, backward, prios}) => {
 		if (queue.length > 0) add(prio.get(op), runOp, op) // add self
 	}
 
-	const readFromInput = (input) => {
-		const {done, value: diff} = iters.get(input).next()
-		if (done) return;
+	if (async) {
+		const readFromInput = async (input) => {
+			const {done, value: diff} = await iters.get(input).next()
+			if (!done) {
+				onDiff(diff, input)
+				add(100, readFromInput, input) // add self
+			}
+		}
+		for (const input of inputs) add(100, readFromInput, input)
 
-		onDiff(diff, input)
-		add(100, readFromInput, input) // add self
+		const tick = async () => {
+			const task = pop()
+			if (!task) return {done: true, value: undefined}
+
+			const [fn, payload] = task
+			await fn(payload)
+			return {done: false, value: undefined}
+		}
+
+		const iterator = {next: tick}
+		return {[Symbol.asyncIterator]: () => iterator}
+	} else {
+		const readFromInput = (input) => {
+			const {done, value: diff} = iters.get(input).next()
+			if (!done) {
+				onDiff(diff, input)
+				add(100, readFromInput, input) // add self
+			}
+		}
+		for (const input of inputs) add(100, readFromInput, input)
+
+		const tick = () => {
+			const task = pop()
+			if (!task) return {done: true, value: undefined}
+
+			const [fn, payload] = task
+			fn(payload)
+			return {done: false, value: undefined}
+		}
+
+		const iterator = {next: tick}
+		return {[Symbol.iterator]: () => iterator}
 	}
-
-	for (const input of inputs) add(100, readFromInput, input)
-
-	const tick = () => {
-		const task = pop()
-		if (!task) return {done: true, value: undefined}
-		const [fn, payload] = task
-		fn(payload)
-		return {done: false, value: undefined}
-	}
-
-	const iterator = {next: tick}
-	return {[Symbol.iterator]: () => iterator}
 }
 
 module.exports = {

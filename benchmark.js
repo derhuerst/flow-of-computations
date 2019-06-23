@@ -19,10 +19,28 @@ const chainAdds = (input, n) => {
 	return createFlow([input], [ops])
 }
 
-const runner5 = flowRunner(chainAdds(littleRows, 5))
-const runner1000 = flowRunner(chainAdds(littleRows, 1000))
+const runner5Async = flowRunner(chainAdds(littleRows, 5))
+const runner1000Async = flowRunner(chainAdds(littleRows, 1000))
+const runner5 = flowRunner(chainAdds(littleRows, 5), false)
+const runner1000 = flowRunner(chainAdds(littleRows, 1000), false)
 
 new Suite()
+.add('5 adds, 10k rows, async', {
+	defer: true,
+	fn: (deferred) => {
+		(async () => {
+			for await (const _ of runner5Async) {}
+		})().then(() => deferred.resolve())
+	}
+})
+.add('1000 adds, 10k rows, async', {
+	defer: true,
+	fn: (deferred) => {
+		(async () => {
+			for await (const _ of runner1000Async) {}
+		})().then(() => deferred.resolve())
+	}
+})
 .add('5 adds, 10k rows', () => {
 	for (const _ of runner5) {}
 })

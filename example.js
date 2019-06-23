@@ -26,5 +26,9 @@ const flow = createFlow([A, B], [
 ])
 
 const runner = flowRunner(flow)
-for (const _ of runner) {}
-console.error('summer', summer.data())
+;(async () => {
+	for await (const _ of runner) {}
+	console.error('summer', summer.data())
+	// console.error('adder', adder.data())
+	// console.error('zipper', zipper.data())
+})()
