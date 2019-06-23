@@ -18,7 +18,7 @@ const createMap = (mapFn) => {
 	return op(mapFn.name ? `map(${mapFn.name})` : 'map', 1, map)
 }
 
-const createCopy = () => op('copy', 1, createMap(() => {}))
+const createCopy = () => op('copy', 1, createMap(val => val))
 
 const createAdd = x => op(`add(${x})`, 1, createMap(item => item + x))
 const createMul = x => op(`mul(${x})`, 1, createMap(item => item * x))

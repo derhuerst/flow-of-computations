@@ -1,7 +1,7 @@
 {
 	"name": "@derhuerst/flow-of-computations",
 	"description": "Filter, transform and merge sets of data.",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"main": "index.js",
 	"files": [
 		"index.js",
